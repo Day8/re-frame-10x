@@ -3,7 +3,13 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
-Nothing yet.
+#### Changed
+
+- `day8.re-frame-10x.preload` (the default preload) now auto-detects React's major version at runtime and dispatches to the matching mount path. Consumers on React 18 (the typical configuration today) no longer need to set `:preloads [day8.re-frame-10x.preload.react-18]` explicitly to silence the React-17/18 mismatch warning or React's own `ReactDOM.render is no longer supported` deprecation — the bare default does the right thing on React 17 and React 18.
+
+#### Added
+
+- `day8.re-frame-10x.preload-impl.{shared,react-17,react-18}` — internal namespaces that factor the React-version-agnostic setup (`patch!`, `dispatch-sync` init, cache clear, shadow-root creation) and the React-version-specific mount fns out of the existing preloads. The default preload uses these to dispatch; the explicit `preload.react-17` / `preload.react-18` variants now call into them too, eliminating duplication while preserving back-compat.
 
 ## 1.12.0 (2026-04-29)
 
