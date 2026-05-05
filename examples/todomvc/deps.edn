@@ -4,10 +4,18 @@
         reagent/reagent            {:mvn/version "1.2.0"}
         thheller/shadow-cljs       {:mvn/version "2.25.2"}
         zprint/zprint              {:mvn/version "1.2.7"}
-        clj-commons/secretary      {:mvn/version "1.2.4"}
+        ;; clj-commons/secretary is the maintained fork; the abandoned
+        ;; secretary/secretary 1.2.3 was duplicated here AND both versions
+        ;; transitively pull com.cemerick/clojurescript.test 0.2.3-SNAPSHOT
+        ;; (a 2014-era SNAPSHOT). Maven's SNAPSHOT resolution races the
+        ;; cache between concurrent CI runs and can leave a `.pom.part`
+        ;; file with no main pom — failing "Compile Sample Project" with
+        ;; an opaque ArtifactDescriptorException. Exclusion silences the
+        ;; SNAPSHOT pull; duplicate dropped above.
+        clj-commons/secretary      {:mvn/version "1.2.4"
+                                    :exclusions  [com.cemerick/clojurescript.test]}
         day8.re-frame/tracing      {:mvn/version "0.6.2"}
         rewrite-clj/rewrite-clj    {:mvn/version "1.1.47"}
-        secretary/secretary        {:mvn/version "1.2.3"}
         binaryage/devtools         {:mvn/version "1.0.6"}
         metosin/malli              {:mvn/version "0.11.0"}
         day8/shadow-git-inject     {:mvn/version "0.0.5"}}}
