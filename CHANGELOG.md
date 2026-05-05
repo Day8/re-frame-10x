@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file. This change
 
 Nothing yet.
 
+## 1.12.3 (2026-05-05)
+
+#### Changed
+
+- **Sample project (`examples/todomvc`) deps cleaned up.** Dropped a duplicate `secretary/secretary` 1.2.3 (the abandoned upstream of `clj-commons/secretary` 1.2.4 — both were declared); added an `:exclusions [com.cemerick/clojurescript.test]` to the remaining `clj-commons/secretary` to prevent the 2014-era SNAPSHOT from being on the classpath. Maven's SNAPSHOT resolution races the cache between concurrent CI runs and could leave a `.pom.part` file with no main pom — failing the "Compile Sample Project" CI step intermittently. No consumer-facing change; pure CI hygiene + sample-project hygiene.
+
 ## 1.12.2 (2026-05-05)
 
 #### Fixed
