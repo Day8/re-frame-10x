@@ -62,3 +62,39 @@
           (str (.getPath preload-source) " must reference react/version — "
                "without it the auto-detect dispatch can't choose between "
                "the React-17 and React-18 mount paths.")))))
+
+;; ---------------------------------------------------------------------------
+;; Tests for #425: preload-impl.react-18 must NOT statically require
+;; `react-dom/client` (or the inlined reagent.dom.client that does so
+;; transitively). shadow-cljs resolves JS :require deps at compile time
+;; regardless of runtime branch, so React-17 consumers using the
+;; auto-detect default preload would hit a missing-subpath compile failure
+;; if either of those requires returned. The fix bypasses the subpath via
+;; runtime interop on the top-level `react-dom`.
+;; ---------------------------------------------------------------------------
+
+(def ^:private react-18-impl-source
+  (io/file "src/day8/re_frame_10x/preload_impl/react_18.cljs"))
+
+(defn- string-spec? [spec]
+  ;; A JS :require entry, e.g. `["react-dom/client" :as ...]`.
+  (cond
+    (string? spec) spec
+    (sequential? spec) (when (string? (first spec)) (first spec))))
+
+(deftest preload-impl-react-18-does-not-require-react-dom-client-subpath
+  (testing "react_18.cljs must NOT (:require [\"react-dom/client\" ...]) — that subpath only exists on react-dom@18+ and breaks compile for React-17 consumers using the auto-detect default preload"
+    (let [required (require-clause (read-ns-form react-18-impl-source))
+          js-strs  (keep string-spec? required)]
+      (is (not-any? #(re-matches #"react-dom/client(/.*)?" %) js-strs)
+          (str (.getPath react-18-impl-source) " must not (:require [\"react-dom/client\" ...]). "
+               "Use [\"react-dom\" :as react-dom] and reach for createRoot via interop instead. "
+               "See #425.")))))
+
+(deftest preload-impl-react-18-does-not-require-inlined-reagent-dom-client
+  (testing "react_18.cljs must NOT require day8.re-frame-10x.inlined-deps.reagent.v1v2v0.reagent.dom.client — it transitively pulls in react-dom/client and re-introduces #425"
+    (let [required (require-clause (read-ns-form react-18-impl-source))]
+      (is (not (requires-ns? required 'day8.re-frame-10x.inlined-deps.reagent.v1v2v0.reagent.dom.client))
+          (str (.getPath react-18-impl-source) " must not require reagent.dom.client. "
+               "That ns transitively requires [\"react-dom/client\" ...], which fails to compile "
+               "on React 17. Use reagent.core/as-element + interop on top-level react-dom. See #425.")))))

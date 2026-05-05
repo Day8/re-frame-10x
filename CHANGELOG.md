@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file. This change
 
 Nothing yet.
 
+## 1.12.2 (2026-05-05)
+
+#### Fixed
+
+- **Default preload no longer fails to compile on React-17 consumers.** 1.12.1's auto-detect default `day8.re-frame-10x.preload` statically required `preload-impl.react-18`, which in turn required the inlined `reagent.dom.client`, which `(:require ["react-dom/client" :as ...])` — a subpath that only exists in `react-dom@18+`. shadow-cljs resolves JS `:require` deps at compile time regardless of runtime branch, so React-17 consumers using the bare default preload couldn't compile (closes [#425](https://github.com/day8/re-frame-10x/issues/425)). 1.12.2 bypasses `reagent.dom.client` in `preload-impl.react-18` — requires the top-level `react-dom` (works on both 17 and 18) and reaches for `createRoot` via interop. Hiccup→React-element conversion goes via `reagent.core/as-element` (React-version-agnostic). React-17 consumers using the auto-detect default preload now compile cleanly; React-18 consumers see no behavioural change. Two new JVM regression tests pin that `preload-impl.react-18` does NOT statically require `react-dom/client` or `reagent.dom.client`, so any future re-introduction is caught by `lein test` before a release.
+
 ## 1.12.1 (2026-05-04)
 
 #### Changed
