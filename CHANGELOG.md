@@ -3,7 +3,19 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
-Nothing yet.
+#### Added
+
+- **React 19 support via explicit preload.** New `day8.re-frame-10x.preload.react-19` entry point and internal `day8.re-frame-10x.preload-impl.react-19` mount fn. react-dom@19 removed `createRoot` (and `render`) from the top-level `react-dom` exports — they only exist on the `react-dom/client` subpath, which the auto-detecting default preload cannot require without breaking React-17 consumer compiles (#425). React-19 consumers must opt in: `:preloads [day8.re-frame-10x.preload.react-19]`.
+
+#### Changed
+
+- **Default preload now warns on React 19 instead of silently failing to mount.** Previously the auto-detect dispatch grouped `("18" "19")` onto the React-18 mount path, which reads `createRoot` off the top-level `react-dom` module — undefined on react-dom@19, so the panel never mounted and no error surfaced. The dispatch now has an explicit `"19"` branch that warns and points at `day8.re-frame-10x.preload.react-19`.
+- **Popout debugger window works on React 19.** `navigation.views/mount` no longer calls the legacy `reagent.dom/render` (removed in React 19) unconditionally: mounting goes through a `day8.re-frame-10x.fx.window/popup-mounter` registry, which `preload-impl.react-19` populates with a `createRoot`-based mounter at load. Older Reacts fall back to the legacy path unchanged.
+- **Dev/test matrix moved to React 19 + Reagent 2.0.1** (root `package.json`, root `shadow-cljs.edn` userland deps, `examples/todomvc`). The sample project preloads `day8.re-frame-10x.preload.react-19`, exercising the new entry point in CI's "Compile Sample Project" step. Root `shadow-cljs.edn` also now lists 10x's own compile-time deps (arrangement, devtools, zprint, re-highlight, highlight, tools.logging) explicitly — shadow-cljs resolves only its own `:dependencies`, not `deps.edn`/`project.clj`.
+
+#### Fixed
+
+- cljs test build: added missing `:dependencies` to root `shadow-cljs.edn` so `npx shadow-cljs compile test` resolves 10x's own requires.
 
 ## 1.12.3 (2026-05-05)
 

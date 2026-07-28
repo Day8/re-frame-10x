@@ -28,10 +28,20 @@
 ;; requires in src/day8/re_frame_10x/* — should adopt the
 ;; `userland.re-frame[.X]` aliasing for grep-ability.
 
-{:source-paths ["src" "gen-src" "test"]
+{:source-paths ["src" "gen-src" "resources" "test"]
 
- :dependencies [[reagent "1.2.0"]
-                [re-frame "1.4.5"]]
+ :dependencies [[reagent "2.0.1"]
+                [re-frame "1.4.5"]
+                ;; 10x's own src requires these (see project.clj); shadow-cljs
+                ;; resolves only what is listed here, not deps.edn/project.clj.
+                [mvxcvi/arrangement "2.1.0"]
+                [binaryage/devtools "1.0.6"]
+                [zprint "1.2.7"]
+                [superstructor/re-highlight "2.0.2"]
+                [cljsjs/highlight "10.3.1-0"]
+                [org.clojure/tools.logging "1.2.4"]
+                ;; garden.compiler (macro side) calls the YUI CssCompressor
+                [com.yahoo.platform.yui/yuicompressor "2.4.8" :exclusions [rhino/js]]]
 
  :builds
  {:test

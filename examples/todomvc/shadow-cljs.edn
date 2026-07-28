@@ -9,7 +9,7 @@
    :modules
    {:todomvc
     {:init-fn todomvc.core/main
-     :preloads [day8.re-frame-10x.preload.react-18]}}
+     :preloads [day8.re-frame-10x.preload.react-19]}}
    :dev
    {:compiler-options
     {:infer-externs false
