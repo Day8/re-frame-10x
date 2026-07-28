@@ -38,11 +38,12 @@
 (defn popup-mounter
   "Mount fn for the popout debugger window. Same shape as
    navigation.views/mount's legacy `rdom/render` call site: takes the
-   element and the shadow-root, returns a value with an `.unmount` for
-   the window's beforeunload hook."
+   hiccup element and the shadow-root, returns the React root (which
+   carries `.unmount`). Converts hiccup via `reagent.core/as-element` —
+   root.render takes a React element, not hiccup."
   [element shadow-root]
   (let [root (react-dom-client/createRoot shadow-root)]
-    (.render root element)
+    (.render root (r/as-element element))
     root))
 
 ;; Register so navigation.views/mount prefers this over the legacy

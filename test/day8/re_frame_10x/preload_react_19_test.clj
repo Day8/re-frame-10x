@@ -75,6 +75,24 @@
           (str (.getPath react-19-impl-source) " must reset! fx.window/popup-mounter "
                "so navigation.views/mount avoids the legacy ReactDOM.render path.")))))
 
+(deftest preload-impl-react-19-popup-mounter-converts-hiccup
+  (testing "popup-mounter must convert the hiccup element via as-element before root.render — root.render takes a React element, not hiccup (raw hiccup renders 'Functions are not valid as a React child')"
+    (let [forms (with-open [r (java.io.PushbackReader. (io/reader react-19-impl-source))]
+                  (let [eof (Object.)]
+                    (loop [acc []]
+                      (let [f (read {:eof eof} r)]
+                        (if (identical? f eof) acc (recur (conj acc f)))))))
+          mounter (some (fn [f]
+                          (when (and (sequential? f)
+                                     (= 'defn (first f))
+                                     (= 'popup-mounter (second f)))
+                            f))
+                        forms)]
+      (is (some? mounter) "popup-mounter defn not found")
+      (is (re-find #"as-element" (pr-str mounter))
+          (str "popup-mounter in " (.getPath react-19-impl-source)
+               " must wrap element in r/as-element before .render.")))))
+
 (deftest preload-react-19-entry-requires-shared-and-impl
   (testing "preload/react_19.cljs requires the shared setup, the react-19 impl, and the public ns"
     (let [required (require-clause (read-ns-form react-19-preload-source))]
