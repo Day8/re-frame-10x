@@ -35,6 +35,7 @@
    [day8.re-frame-10x.material                                   :as material]
    [day8.re-frame-10x.styles                                     :as styles]
    [day8.re-frame-10x.tools.shadow-dom                           :as tools.shadow-dom]
+   [day8.re-frame-10x.fx.window                                  :as fx.window]
    [day8.re-frame-10x.popup :as popup])
   (:require-macros [day8.re-frame-10x.components.re-com :refer [inline-resource]]))
 
@@ -426,21 +427,22 @@
                                    (some-> @window-position-interval js/clearInterval)
                                    nil)]
     (gobj/set popup-window "onunload" #(rf/dispatch [::navigation.events/external-closed]))
-    (rdom/render
-     [(r/create-class
-       {:display-name           "devtools outer external"
-        :component-did-mount    (fn []
-                                  (.addEventListener popup-window "resize" handle-window-resize)
-                                  (.addEventListener popup-window "beforeunload" unmount)
-                                    ;; Check the window position every 10 seconds
-                                  (reset! window-position-interval
-                                          (js/setInterval
-                                           handle-window-position
-                                           2000)))
-        :component-will-unmount unmount
-        :reagent-render         (fn []
-                                  [spade.react/with-style-container spade-container
-                                   [:<>
-                                    [:style (inline-resource "day8/re_frame_10x/style.css")]
-                                    [devtools-inner {:panel-type :popup}]]])})]
-     shadow-root)))
+    (let [element [(r/create-class
+                    {:display-name           "devtools outer external"
+                     :component-did-mount    (fn []
+                                               (.addEventListener popup-window "resize" handle-window-resize)
+                                               (.addEventListener popup-window "beforeunload" unmount)
+                                                 ;; Check the window position every 10 seconds
+                                               (reset! window-position-interval
+                                                       (js/setInterval
+                                                        handle-window-position
+                                                        2000)))
+                     :component-will-unmount unmount
+                     :reagent-render         (fn []
+                                               [spade.react/with-style-container spade-container
+                                                [:<>
+                                                 [:style (inline-resource "day8/re_frame_10x/style.css")]
+                                                 [devtools-inner {:panel-type :popup}]]])})]]
+      ;; React 19 removed ReactDOM.render — a createRoot-based mounter is
+      ;; registered by preload-impl.react-19; older Reacts use the legacy path.
+      (fx.window/mount-with-registry element shadow-root rdom/render))))

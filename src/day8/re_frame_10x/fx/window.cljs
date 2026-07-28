@@ -8,6 +8,25 @@
 
 (def popout-window (r/atom nil))
 
+(defonce popup-mounter
+  ;; Mount fn for the popout debugger window, shape [element shadow-root]
+  ;; -> mounted-handle (with .unmount where the API provides one).
+  ;; nil means navigation.views/mount uses its legacy `reagent.dom/render`
+  ;; path (React <= 18). preload-impl.react-19 registers a createRoot-based
+  ;; mounter here at load, because React 19 removed ReactDOM.render.
+  (atom nil))
+
+(defn mount-with-registry
+  "Mounts `element` into `shadow-root` via the registered popup-mounter,
+   falling back to `legacy-render` (shape [element shadow-root]) when no
+   mounter is registered. React 19 removed ReactDOM.render, so React-19
+   consumers get a createRoot-based mounter from preload-impl.react-19;
+   older Reacts fall through to `reagent.dom/render`."
+  [element shadow-root legacy-render]
+  (if-let [mounter @popup-mounter]
+    (mounter element shadow-root)
+    (legacy-render element shadow-root)))
+
 (defn m->str
   [m]
   (->> m

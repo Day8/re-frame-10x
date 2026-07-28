@@ -244,6 +244,8 @@ Reagent Versions  | React Versions      | re-frame-10x Artifact | Status |
 
 **For React 18:** Consider using `{:preloads [day8.re-frame-10x.preload.react-18]}`. This will use [React's new render API](https://react.dev/blog/2022/03/29/react-v18#react-dom-client). Otherwise, expect deprecation warnings from React.
 
+**For React 19:** Use `{:preloads [day8.re-frame-10x.preload.react-19]}`. react-dom@19 removed `createRoot` (and `render`) from the top-level `react-dom` exports, so the auto-detecting `day8.re-frame-10x.preload` cannot mount the panel on React 19 — it warns and points here instead. React 19 also needs Reagent 2.x on the consumer side.
+
 **For versions < 0.4.0:** If your project uses React 16 and Reagent 0.8.0-alpha2 (or higher) then you will need to add the qualifier `-react16` to the version, e.g. `[day8.re-frame/re-frame-10x "VERSION-react16"]`.
 
 **Note**: If also using [re-com](https://github.com/day8/re-com) then on upgrading reagent you may also need to upgrade re-com.
